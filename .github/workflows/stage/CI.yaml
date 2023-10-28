@@ -1,0 +1,37 @@
+name: CI_dev_to_stage
+on:
+  pull_request:
+    branches:
+      - stage
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: $
+          aws-secret-access-key: $
+          aws-region: ap-northeast-2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Set var
+        id: set-var
+        run: |
+          echo ::set-output name=ECR_REGISTRY::$
+          echo ::set-output name=ECR_REPOSITORY::demo
+          echo ::set-output name=IMAGE_TAG::$(cat VERSION)
+      - name: Docker image Build
+        id: build-image
+        run: |
+          docker build \
+            -f Dockerfile \
+            -t $/$:$ .
+      - name: Docker image Push
+        id: push-image
+        run: |
+          docker push $/$:$
