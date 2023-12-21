@@ -24,7 +24,7 @@
 #    See the documentation for each action used below for the recommended IAM policies for this IAM user,
 #    and best practices on handling the access key credentials.
 
-name: Continuous Integration when accure pull_request at stage branch
+name: Continuous Integration when accure push at stage branch
 
 on:
   push:
@@ -35,7 +35,7 @@ env:
   ECR_REPOSITORY: with_ance               # set this to your Amazon ECR repository name
   CONTAINER_NAME: with_ance_backend           # set this to the name of the container in the
   REF: ${{ github.event.push.base_ref }}
-  
+
 permissions:
   contents: read
 
