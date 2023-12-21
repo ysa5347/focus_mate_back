@@ -27,15 +27,15 @@
 name: Continuous Integration when accure pull_request at stage branch
 
 on:
-  pull_request:
+  push:
     branches: [ "stage" ]
 
 env:
   AWS_REGION: ap-northeast-2                   # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: with_ance               # set this to your Amazon ECR repository name
   CONTAINER_NAME: with_ance_backend           # set this to the name of the container in the
-  REF: ${{ github.event.pull_request.head.ref }}
-
+  REF: ${{ github.event.push.base_ref }}
+  
 permissions:
   contents: read
 
@@ -75,13 +75,14 @@ jobs:
       id: build-push
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        SHA: ${{ github.event.push.after }}
         
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to EKS or local k8s.
         echo $REF
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PULLRQE-$SHA --build-arg BRANCH=${{ env.REF }} .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PULLRQE-$SHA --build-arg BRANCH=$REF .
+        
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-$SHA
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-$SHA"
