@@ -73,8 +73,7 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       id: build-push
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        SHA: ${{ github.event.push.after }}
+        sha: ${{ github.event.push.after }}
         branch: ${{ github.ref_name }}
         
       run: |
@@ -82,7 +81,7 @@ jobs:
         # push it to ECR so that it can
         # be deployed to EKS or local k8s.
         echo ${{ github.event.push.base_ref }}
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.SHA }} --build-arg BRANCH=${{ env.branch }} .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.SHA }}
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.SHA }}"
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }}
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }}"
