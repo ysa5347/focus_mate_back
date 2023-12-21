@@ -75,7 +75,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         SHA: ${{ github.event.push.after }}
-        branch: ${{ github.ref }}
+        branch: ${{ github.ref#refs/heads/ }}
         
       run: |
         # Build a docker container and
