@@ -84,4 +84,4 @@ jobs:
         echo $branch
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.SHA }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.SHA }}
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.SHA }}
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.SHA }}"
