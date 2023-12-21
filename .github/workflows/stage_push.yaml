@@ -75,13 +75,12 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         SHA: ${{ github.event.push.after }}
+        branch: ${{ github.event.push.base_ref }}
         
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to EKS or local k8s.
-        echo ${{ github.event.push.base_ref }}
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-$SHA --build-arg branch=${{ github.event.push.base_ref }} .
-        
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-$SHA --build-arg branch=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-$SHA
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PUSH-$SHA"
