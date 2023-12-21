@@ -16,6 +16,8 @@ RUN apt install -y python3\
     python3-pip
     
 ARG BRANCH=${branch}
+
+RUN echo $BRANCH
 RUN git clone -b $BRANCH https://github.com/ysa5347/with_ance_app
 RUN ls
 
