@@ -82,7 +82,7 @@ jobs:
         # push it to ECR so that it can
         # be deployed to EKS or local k8s.
         echo $REF
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PULLRQE-$SHA --build-arg BRANCH=$REF .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-$SHA --build-arg BRANCH=$REF .
         
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-$SHA
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-$SHA"
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-$SHA
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PUSH-$SHA"
