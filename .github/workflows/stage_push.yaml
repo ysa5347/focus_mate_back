@@ -81,8 +81,8 @@ jobs:
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to EKS or local k8s.
-        echo $branch
-        echo ${{ github.event.push.after }}
+        echo ${{ env.branch }}
+        echo ${{ env.sha }}
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }}"
