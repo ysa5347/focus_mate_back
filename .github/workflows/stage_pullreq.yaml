@@ -34,7 +34,6 @@ env:
   AWS_REGION: ap-northeast-2                   # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: with_ance               # set this to your Amazon ECR repository name
   CONTAINER_NAME: with_ance_backend           # set this to the name of the container in the
-  REF: ${{ github.event.pull_request.head.ref }}
 
 permissions:
   contents: read
@@ -49,7 +48,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with: 
-        ref: $REF
+        ref: ${{ github.event.pull_request.head.ref }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
@@ -74,14 +73,15 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       id: build-push
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}        
+        sha: ${{ github.event.pull_request.merge_commit_sha }}
+        branch: ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
         
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to EKS or local k8s.
-        echo $REF
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PULLRQE-$SHA --build-arg BRANCH=${{ env.REF }} .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-$SHA
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-$SHA"
+        echo ${{ github.event.push.after }}
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PULLRQE-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-${{ env.sha }}
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:PULLREQ-${{ env.sha }}"
