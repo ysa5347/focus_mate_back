@@ -83,6 +83,6 @@ jobs:
         # be deployed to EKS or local k8s.
         echo ${{ github.event.push.base_ref }}
         echo ${{ github.event.push.after }}
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:PUSH-${{ env.sha }}
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:main-PUSH-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:main-PUSH-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-PUSH-${{ env.sha }}"
