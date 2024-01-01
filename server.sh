@@ -1,5 +1,4 @@
 #!/bin/bash
-ls
 cd /with_ance/with_ance_app/
 cat .env
 cd ./with_ance/
