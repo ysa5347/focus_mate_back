@@ -1,18 +1,12 @@
 name: Continuous Integration when accure dispatch at dev branch
 
-on: 
-  workflow_dispatch:
-    inputs:
-      branch: 
-        description: dev/branch
-        required: true
-        type: string
+on: workflow_dispatch
 
 env:
   AWS_REGION: ap-northeast-2                   # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: with_ance               # set this to your Amazon ECR repository name
   CONTAINER_NAME: with_ance_backend           # set this to the name of the container in the
-  REF: refs/heads/dev/${{ inputs.branch }}
+  REF: ${{ github.ref }}
 
 permissions:
   contents: read
@@ -62,7 +56,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         sha: ${{ steps.vars.outputs.sha_short }}
-        branch: ${{ inputs.branch }}
+        branch: ${{ github.ref_name }}
         
       run: |
         # Build a docker container and
