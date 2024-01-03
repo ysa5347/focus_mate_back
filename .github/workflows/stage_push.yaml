@@ -50,6 +50,13 @@ jobs:
       with: 
         ref: ${{ github.event.push.base_ref }}
 
+    - name: Set sha outputs
+      id: vars
+      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Check sha outputs
+      run: echo ${{ steps.vars.outputs.sha_short }}
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -75,7 +82,7 @@ jobs:
       id: build-push
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        sha: ${{ github.sha }}
+        sha: ${{ steps.vars.outputs.sha_short }}
         branch: ${{ github.ref_name }}
         
       run: |
@@ -84,6 +91,6 @@ jobs:
         # be deployed to EKS or local k8s.
         echo ${{ env.branch }}
         echo ${{ env.sha }}
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:stage-PUSH-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:stage-PUSH-${{ env.sha }}
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:stage-PUSH-${{ env.sha }}"
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:stage-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:stage-${{ env.sha }}
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:stage-${{ env.sha }}"
