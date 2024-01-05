@@ -67,9 +67,9 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }}"
-
+        
+    - uses: chrisdickinson/setup-yq@latest
     - name: create PR on with_ance_config
-      uses: chrisdickinson/setup-yq@latest
       id: create-config
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
