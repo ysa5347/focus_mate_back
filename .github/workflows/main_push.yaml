@@ -94,7 +94,7 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}"
 
-    - uses: chrisdickinson/setup-yq@latest
+    - uses: mikefarah/yq@master
     - name: create PR on with_ance_config
       id: create-config
       env:
