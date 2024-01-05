@@ -67,8 +67,8 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }}"
-        
-    - uses: chrisdickinson/setup-yq@latest
+
+    - uses: mikefarah/yq@master
     - name: create PR on with_ance_config
       id: create-config
       env:
@@ -86,5 +86,5 @@ jobs:
         # fi
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
-        git commit -c "TAG; tag $branch"
+        git commit -m "TAG; tag $branch"
         git push origin main

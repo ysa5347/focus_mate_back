@@ -107,8 +107,7 @@ jobs:
         git clone ${{ env.REPOURL }}
         cd with_ance_config
         git checkout main
-        ls
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
-        git commit -c "TAG; tag $branch"
+        git commit -m "TAG; tag $branch"
         git push origin main
