@@ -95,29 +95,44 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}"
+        
+  CD:
+    name: CD
+    needs: CI
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      REPOURL: "https://github.com/ysa5347/with_ance_config.git"
 
+
+    steps:  
     - uses: mikefarah/yq@master
+    - name: Checkout
+      uses: actions/checkout@v3
+      with: 
+        repository: ysa5347/with_ance_config
+        ref: main
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        persist-credentials: true
+        
     - name: create PR on with_ance_config
       id: create-config
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        SHA: ${{ steps.vars.outputs.sha_short }}
-        REPOURL: "https://github.com/ysa5347/with_ance_config.git"
-        TAG: ${{ env.ECR_REGISTRY }}/$ECR_REPOSITORY:stage-${{ env.SHA }}
+        SHA: ${{ CI.steps.vars.outputs.sha_short }}
         branch: ${{ github.ref_name }}
+        TAG: ${{ CI.env.ECR_REGISTRY }}/$ECR_REPOSITORY:${{ env.branch }}-${{ env.SHA }}
       run: |
-        git clone ${{ env.REPOURL }}
-        git config --global user.email "ysa5347@gmail.com"
-        git config --global user.name "ysa5347"
         cd with_ance_config
-        git checkout main
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
         git commit -m "TAG; tag $branch"
+        git push origin main
 
-    - name: git push
-      uses: ad-m/github-push-action@master
-      with:
-        ssh: true
-        repository: ysa5347/with_ance_config
-        branch: main
+   
+    # - name: git push
+    #   uses: ad-m/github-push-action@master
+    #   with:
+    #     ssh: true
+    #     repository: ysa5347/with_ance_config
+    #     branch: main
