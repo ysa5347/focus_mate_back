@@ -95,6 +95,10 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}"
+
+    outputs:
+      source_registry: ${{ steps.login-ecr.outputs.registry }}
+      sha_short: ${{ steps.vars.outputs.sha_short }}
         
   CD:
     name: CD
@@ -118,7 +122,7 @@ jobs:
     - name: create PR on with_ance_config
       id: create-config
       env:
-        ECR_REGISTRY: ${{ needs.CI.outputs.registry }}
+        ECR_REGISTRY: ${{ needs.CI.outputs.source_registry }}
         SHA: ${{ needs.CI.outputs.sha_short }}
         branch: ${{ github.ref_name }}
       run: |
