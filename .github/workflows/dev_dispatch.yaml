@@ -91,10 +91,5 @@ jobs:
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
         git commit -m "TAG; tag $branch"
-
-    - name: push changes
-      uses: ad-m/github-push-action@master
-      with:
-        ssh: true
-        repository: "with_ance_config"
-        branch: main      
+        git push origin main
+  
