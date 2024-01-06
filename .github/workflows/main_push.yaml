@@ -97,7 +97,7 @@ jobs:
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}"
 
     outputs:
-      source_registry: ${{ steps.login-ecr.outputs.registry }}
+      registry: ${{ steps.login-ecr.outputs.registry }}
       sha_short: ${{ steps.vars.outputs.sha_short }}
         
   CD:
@@ -122,13 +122,13 @@ jobs:
     - name: create PR on with_ance_config
       id: create-config
       env:
-        ECR_REGISTRY: ${{ needs.CI.outputs.source_registry }}
+        ECR_REGISTRY: ${{ needs.CI.outputs.registry }}
         SHA: ${{ needs.CI.outputs.sha_short }}
         branch: ${{ github.ref_name }}
+        TAG: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}-${{ env.SHA }}
       run: |
         git config --global user.email "ysa5347@gmail.com"
         git config --global user.name "ysa5347"
-        echo TAG=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}-${{ env.SHA }}
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
         git commit -m "TAG; tag $branch $SHA"
