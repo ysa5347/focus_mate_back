@@ -128,7 +128,7 @@ jobs:
       run: |
         git config --global user.email "ysa5347@gmail.com"
         git config --global user.name "ysa5347"
-        echo TAG=${{ needs.CI.env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}-${{ env.SHA }}
+        echo TAG=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}-${{ env.SHA }}
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
         git commit -m "TAG; tag $branch $SHA"
