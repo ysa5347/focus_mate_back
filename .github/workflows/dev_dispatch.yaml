@@ -79,6 +79,8 @@ jobs:
         branch: ${{ github.ref_name }}
       run: |
         git clone ${{ env.REPOURL }}
+        git config --global user.email "ysa5347@gmail.com"
+        git config --global user.name "ysa5347"        
         cd with_ance_config
         git checkout main
         # if[yq '.images.tags[]|contains(.name==strenv(branch))' ./with_ance/values.yaml ]; then
