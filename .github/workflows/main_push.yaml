@@ -118,6 +118,6 @@ jobs:
     - name: git push
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        ssh: true
         repository: ysa5347/with_ance_config
         branch: main
