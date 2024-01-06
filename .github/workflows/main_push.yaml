@@ -118,12 +118,23 @@ jobs:
         ref: main
         ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         persist-credentials: true
-        
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.BUILDER_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.BUILDER_AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
     - name: create PR on with_ance_config
       id: create-config
       env:
         branch: ${{ github.ref_name }}
-        TAG: ${{ needs.CI.outputs.ecr_registry }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}-${{ needs.CI.outputs.sha_short }}
+        TAG: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}-${{ needs.CI.outputs.sha_short }}
       run: |
         git config --global user.email "ysa5347@gmail.com"
         git config --global user.name "ysa5347"
