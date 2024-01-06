@@ -123,7 +123,6 @@ jobs:
         branch: ${{ github.ref_name }}
         TAG: ${{ needs.CI.env.ECR_REGISTRY }}/$ECR_REPOSITORY:${{ env.branch }}-${{ env.SHA }}
       run: |
-        cd with_ance_config
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
         git commit -m "TAG; tag $branch"
