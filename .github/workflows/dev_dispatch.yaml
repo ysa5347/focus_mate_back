@@ -51,7 +51,6 @@ jobs:
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
       run: |
         jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' <<< "$SECRETS_CONTEXT" > .env
-        cat .env
 
     - name: Build, tag, and push image to Amazon ECR
       id: build-push
@@ -61,35 +60,55 @@ jobs:
         branch: ${{ github.ref_name }}
         
       run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to EKS or local k8s.
-        echo ${{ env.branch }}
-        echo ${{ env.sha }}
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:dev-${{ env.sha }}"
 
+    outputs:
+      sha_short: ${{ steps.vars.outputs.sha_short }}
+        
+  CD:
+    name: CD
+    needs: CI
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      REPOURL: "https://github.com/ysa5347/with_ance_config.git"
+
+
+    steps:  
     - uses: mikefarah/yq@master
+    - name: Checkout
+      uses: actions/checkout@v3
+      with: 
+        repository: ysa5347/with_ance_config
+        ref: main
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        persist-credentials: true
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.BUILDER_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.BUILDER_AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
     - name: create PR on with_ance_config
       id: create-config
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        SHA: ${{ steps.vars.outputs.sha_short }}
-        REPOURL: "https://github.com/ysa5347/with_ance_config.git"
-        TAG: ${{ env.ECR_REGISTRY }}/$ECR_REPOSITORY:dev-${{ env.SHA }}
         branch: ${{ github.ref_name }}
+        TAG: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}-${{ needs.CI.outputs.sha_short }}
       run: |
-        git clone ${{ env.REPOURL }}
         git config --global user.email "ysa5347@gmail.com"
-        git config --global user.name "ysa5347"        
-        cd with_ance_config
-        git checkout main
+        git config --global user.name "ysa5347"
         # if[yq '.images.tags[]|contains(.name==strenv(branch))' ./with_ance/values.yaml ]; then
         # yq -i '.images.tags +={"name":strenv(branch),"tag":strenv(TAG)}' ./with_ance/values.yaml
         # fi
         yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
         git add .
-        git commit -m "TAG; tag $branch"
+        git commit -m "TAG; tag $branch ${{ needs.CI.outputs.sha_short }}"
         git push origin main
-  
