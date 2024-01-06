@@ -73,6 +73,8 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
+    - name: 
+
     - name: Create .env file
       env:
         SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -89,15 +91,15 @@ jobs:
       run: |
         # Build a docker container and
         # push it to ECR so that it can
-        # be deployed to EKS or local k8s.
-        echo ${{ github.event.push.base_ref }}
+        # be deployed to EKS or local k8s. 
+        echo "registry=${{ env.ECR_REGISTRY }}" >> $GITHUB_OUTPUT
         echo ${{ github.event.push.after }}
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}"
 
     outputs:
-      registry: ${{ steps.login-ecr.outputs.registry }}
+      registry: ${{ steps.build-push.outputs.registry }}
       sha_short: ${{ steps.vars.outputs.sha_short }}
         
   CD:
