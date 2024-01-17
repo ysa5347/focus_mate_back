@@ -39,17 +39,21 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
     phoneNum = models.CharField(max_length=11, unique=True, help_text='phone number')
     email = models.CharField(max_length=100, unique=True, help_text='Email')
     birth = models.PositiveSmallIntegerField(null=True, blank=True)
-    name = models.CharField(max_length=40) 
+    name = models.CharField(max_length=40, null=True) 
     createdTime = models.DateTimeField(_('date joined'), default=timezone.now)
-    college = models.CharField(max_length=100)
-    major = models.CharField(max_length=100)
-    semaster = models.PositiveSmallIntegerField()
+    college = models.CharField(max_length=100, null=True)
+    major = models.CharField(max_length=100, null=True)
+    semaster = models.PositiveSmallIntegerField(null=True)
     comment = models.CharField(max_length=200, blank=True)
     profileImg = models.ImageField(blank=True)
     # livingArea = models.PointField()
     # groups => related_name = 
     # rooms => related_name = 
-
+    is_staff = models.BooleanField(
+        _('staff status'),
+        default=False,
+        help_text=_('Designates whether the user can log into this admin site.'),
+    )
     objects = UserManager()
 
     REQUIRED_FIELDS = ['email']

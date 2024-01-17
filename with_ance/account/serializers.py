@@ -21,17 +21,17 @@ class userCreateSerializer(serializers.Serializer):
         
 class userListSerializer(serializers.ModelSerializer):
     class Meta:
-        models = CustomUser
+        model = CustomUser
         fields = ['userID']
 
 class userDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        models = CustomUser
+        model = CustomUser
         fields = '__all__'
 
 class userAbstractSerializer(serializers.ModelSerializer):
     class Meta:
-        models = CustomUser
+        model = CustomUser
         fields = ['userID', 'email', 'college', 'major', 'semaster', 'comment']
 
 class userLoginSerializer(serializers.Serializer):
@@ -40,5 +40,5 @@ class userLoginSerializer(serializers.Serializer):
 
 class userFollowingSerializer(serializers.ModelSerializer):
     class Meta:
-        models = FollowUserStat
+        model = FollowUserStat
         exclude = ['pk']
