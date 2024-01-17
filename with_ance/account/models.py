@@ -13,10 +13,7 @@ class UserManager(BaseUserManager):
         if not userID:
             raise ValueError('The given ID must be set')
         email = self.normalize_email(email)
-        user = self.model(
-            userID=userID,
-            email=email,
-            **extra_fields)
+        user = self.model(userID=userID, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -38,50 +35,20 @@ class UserManager(BaseUserManager):
         return self.create_user(userID, email, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 password columm이 이미 있음
-    userID = models.CharField(
-        max_length=15,
-        primary_key=True,
-        help_text='user ID'
-        )
-    phone = models.CharField( #휴대폰 인증 서비스 등록 필
-        max_length=11,
-        unique=True,
-        help_text='phone number'
-        )
-    email = models.CharField( #이메일 인증 서비스 등록 필
-        max_length=100,
-        unique=True,
-        help_text='Email'
-        )
-    birth = models.PositiveSmallIntegerField(null=True, blank=True) 
-    penalty = models.PositiveSmallIntegerField(default=0)
+    userID = models.CharField(max_length=15, primary_key=True, help_text='user ID')
+    phoneNum = models.CharField(max_length=11, unique=True, help_text='phone number')
+    email = models.CharField(max_length=100, unique=True, help_text='Email')
+    birth = models.PositiveSmallIntegerField(null=True, blank=True)
     name = models.CharField(max_length=40) 
-        
-    isExp = models.BooleanField(
-        _('post permition request status'),
-        default=False,
-        help_text=_('Designates whether this user should be registrated on post permition waiting list.')
-        )
-    isPermit = models.BooleanField(
-        _('post permition status'),
-        default=False,
-        help_text=_('Designates whether this user should be treated as post writer')
-        )
-    
-    is_staff = models.BooleanField(
-        _('staff status'),
-        default=False,
-        help_text=_('Designates whether the user can log into this admin site.'),
-    )
-    is_active = models.BooleanField(
-        _('active'),
-        default=True,
-        help_text=_(
-            'Designates whether this user should be treated as active. '
-            'Unselect this instead of deleting accounts.'
-        ),
-    )
-    dateJoined = models.DateTimeField(_('date joined'), default=timezone.now)
+    createdTime = models.DateTimeField(_('date joined'), default=timezone.now)
+    college = models.CharField(max_length=100)
+    major = models.CharField(max_length=100)
+    semaster = models.PositiveSmallIntegerField()
+    comment = models.CharField(max_length=200, blank=True)
+    profileImg = models.ImageField(blank=True)
+    # livingArea = models.PointField()
+    # groups => related_name = 
+    # rooms => related_name = 
 
     objects = UserManager()
 
@@ -98,4 +65,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
 
     def get_short_name(self):
         return self.userID
+    
+class FollowUserStat(models.Model):
+    pk = models.PositiveIntegerField(primary_key=True)
+    follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follower_user')        # 팔로우 당한사람
+    follow = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follow_user')            # 팔로우 하는사람
+
+
 # Create your models here.
