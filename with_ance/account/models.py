@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
@@ -38,6 +37,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
     userID = models.CharField(max_length=15, primary_key=True, help_text='user ID')
     phoneNum = models.CharField(max_length=11, unique=True, help_text='phone number')
     email = models.CharField(max_length=100, unique=True, help_text='Email')
+    gender = models.BooleanField()
     birth = models.PositiveSmallIntegerField(null=True, blank=True)
     name = models.CharField(max_length=40, null=True) 
     createdTime = models.DateTimeField(_('date joined'), default=timezone.now)
@@ -47,8 +47,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
     comment = models.CharField(max_length=200, blank=True)
     profileImg = models.ImageField(blank=True)
     # livingArea = models.PointField()
-    # groups => related_name = 
-    # rooms => related_name = 
+    # groups => groups what One ptcp
+    # leadingGroups => groups what One ptcp as leader
+    # groupTable => table about one's ptcping groups
+    # rooms => rooms what One ptcp
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,

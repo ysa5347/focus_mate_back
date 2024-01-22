@@ -14,8 +14,6 @@ from .permissions import IsOwnerOrReadOnly, OwnerOnly
 from .serializers import userListSerializer, userDetailSerializer, userAbstractSerializer, userCreateSerializer, userFollowingSerializer
 from .models import CustomUser, FollowUserStat
 
-# class userCreateViewAPI(APIView):
-
 # class userListViewAPI:
 
 class userDetailViewAPI(APIView):       #permition 필요
