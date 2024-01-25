@@ -56,7 +56,7 @@ class userCreateViewAPI(APIView):
         if CustomUser.objects.filter(userID=serializer.validated_data['userID']).first() is None:
             serializer.save()
             return Response({"message": "ok"}, status=status.HTTP_201_CREATED)
-        return Response({"message": "duplicate email"}, status=status.HTTP_409_CONFLICT)
+        return Response({"message": "duplicate user"}, status=status.HTTP_409_CONFLICT)
 
 class userSearchViewAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
