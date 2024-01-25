@@ -7,5 +7,5 @@ urlpatterns = [
     path("userSearch", userSearchViewAPI.as_view()),
     path("follow/<str:userID>", userFollowAPI.as_view()),
     path("follower/<str:userID>", userFollowersViewAPI.as_view()),
-    path("following/<str:userID>", userFollowingViewAPI.as_view())
+    path("following/<str:userID>", userFolloweesViewAPI.as_view())
 ]

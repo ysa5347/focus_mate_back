@@ -22,7 +22,24 @@ class userCreateSerializer(serializers.Serializer):
 class userListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['userID']
+        fields = ['userID', 'college', 'major', 'semaster']
+
+class userFollowViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = FollowUserStat
+        fields = '__all__'
+
+# userID가 팔로우당한 사람
+class userFollowersViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = CustomUser
+        fields = ['followee_user']
+
+# userID가 팔로우하는 사람
+class userFolloweesViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = CustomUser
+        fields = ['follower_user']
 
 class userDetailSerializer(serializers.ModelSerializer):
     class Meta:

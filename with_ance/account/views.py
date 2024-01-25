@@ -11,7 +11,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .permissions import IsOwnerOrReadOnly, OwnerOnly
-from .serializers import userListSerializer, userDetailSerializer, userAbstractSerializer, userCreateSerializer, userFollowingSerializer
+from .serializers import *
 from .models import CustomUser, FollowUserStat
 
 # class userListViewAPI:
@@ -70,38 +70,37 @@ class userSearchViewAPI(APIView):
         serializer = userListSerializer(Users, many=True)
         return Response(serializer.data)
 
+# userID를 팔로우하고 있는 사람
 class userFollowersViewAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def get(self, request, userID):
+        user = CustomUser.objects.filter(userID=userID)
+        serializer = userFollowersViewSerializer(user)
+        return Response(serializer.data)     
+
+
+# userID가 팔로우하고 있는 사람
 class userFolloweesViewAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, userID):
+        user = CustomUser.objects.filter(userID=userID)
+        serializer = userFolloweesViewSerializer(user)
+        return Response(serializer.data)
 
 class userFollowAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly, OwnerOnly]
 
+    # userID는 팔로우 당하는 사람임.
     def get(self, request, userID):
-        if CustomUser.objects.exists(userID=userID):
-            user = get_object_or_404(CustomUser, userID=userID)
-            FollowUserStat.objects.create(follow = request.user, follower = userID)
-        else:
-            raise Http404
-            
-class userFollowersViewAPI(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get(self, request, userID):
-        followers = FollowUserStat.objects.filter(follower=userID)  #해당 유저를 팔로우 하는 사람들
-        serializer = userFollowingSerializer(followers, many=True)
+        follower = get_object_or_404(CustomUser, userID=request.user)
+        followee = get_object_or_404(CustomUser, userId=userID)
+        stat = FollowUserStat.objects.create(follower = follower, followee = followee)
+        
+        serializer = userFollowViewSerializer(stat)
         return Response(serializer.data)
 
-
-class userFollowingViewAPI(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get(self, request, userID):
-        followees = FollowUserStat.objects.filter(follow=userID)    #해당 유저가 팔로우 하는 사람들
-        serializer = userFollowingSerializer(followers, many=True)
-        return Response(serializer.data)
     
 
 
