@@ -74,8 +74,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
         return self.userID
     
 class FollowUserStat(models.Model):
-    follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follower_user')        # 팔로우 하는사람
-    followee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='followee_user')        # 팔로우 당한사람
+    follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='followee_users')        # 팔로우 하는사람
+    followee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follower_users')        # 팔로우 당한사람
 
 
 # Create your models here.
