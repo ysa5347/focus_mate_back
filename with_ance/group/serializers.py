@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from .models import *
+from .models import groupSession
 from account.models import CustomUser, FollowUserStat
 from account.serializers import userAbstractSerializer
 

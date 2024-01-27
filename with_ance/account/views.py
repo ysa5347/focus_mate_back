@@ -75,7 +75,7 @@ class userFollowersViewAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, userID):
-        user = CustomUser.objects.filter(userID=userID)
+        user = CustomUser.objects.get(userID=userID)
         serializer = userFollowersViewSerializer(user)
         return Response(serializer.data)     
 
@@ -85,7 +85,7 @@ class userFolloweesViewAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, userID):
-        user = CustomUser.objects.filter(userID=userID)
+        user = CustomUser.objects.get(userID=userID)
         serializer = userFolloweesViewSerializer(user)
         return Response(serializer.data)
 

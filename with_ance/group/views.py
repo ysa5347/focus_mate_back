@@ -8,11 +8,34 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from account.models import CustomUser, FollowUserStat
+from .models import groupSession, groupUserTable
 from .permissions import *
 from .serializers import *
-from .models import groupSession
 
-class groupCreateViewAPI(APIView):
+class groupAPIView(APIView):
+    
+    def get_group(self, pk):
+        group = get_object_or_404(groupSession, pk=pk)
+        return group
+
+    def isUserInGroup(self, request, pk, **kwargs):
+        group = self.get_group(pk)
+        for user in group.users:                
+            if request.user == user.userID:
+                table = groupUserTable.objects.get(user=user, group=group)
+                if not(kwargs.get("include") or table.acceptStat):
+                    raise exceptions.PermissionDenied()
+                return True
+
+        raise exceptions.PermissionDenied() 
+
+    def setUserPresent(self, group):
+        pass
+
+    def queryValidator(self, **kwargs):
+        pass
+
+class groupCreateViewAPI(groupAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     def post(self, request):
         data = request.data
@@ -34,50 +57,94 @@ class groupCreateViewAPI(APIView):
         
         return Response(serializer.data)
 
-class groupListViewAPI(APIView):
+class groupListViewAPI(groupAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        groups = groupSession.objects.all()# filter(pubStat=True)
+        query = super.queryValidator(request.GET)
+        # groups = groupSession.objects.filter(pubStat=True, **query)
+        groups = groupSession.objects.filter(pubStat=True)
         if not groups:
             raise exceptions.NotFound()
-        print(groups[0].name)
         serializer = groupListViewSerializer(groups, many=True)
         return Response(serializer.data)
     
-
-class groupDetailViewAPI(APIView):
+class groupDetailViewAPI(groupAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_object(self, pk):
-        group = get_object_or_404(groupSession, pk=pk)
-        return group
-
-    def insafe_methods_secure(self, request, pk):
-        group = self.get_object(pk)
-
-        for user in group.users:
-            if request.user == user.userID:
-                return
-        raise exceptions.PermissionDenied()
-
     def get(self, request, pk):
-        group = self.get_object(pk)
+        group = super.get_object(pk)
         serializer = groupDetailViewSerializer(group)
         
         return Response(serializer.data)
 
     def patch(self, request, pk):
-        self.insafe_methods_secure(request, pk)
-        group = self.get_object(pk)
-        serializer = groupDetailViewSerializer(data=request.dat, partial=True)
+        super.isUserInGroup(request, pk)
+        group = super.get_object(pk)
+        serializer = groupDetailViewSerializer(group, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.validated_data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        self.insafe_methods_secure(request, pk)
-        group = self.get_object(pk)
+        super.isUserInGroup(request, pk)
+        group = super.get_object(pk)
         group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class userReadyViewAPI(groupAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get(self, request):
+        pk = request.GET['pk']
+        super.isUserInGroup(request, pk)
+
+        group = super.get_object(pk)
+        user = get_object_or_404(CustomUser, userID=request.user)
+        toggle = request.GET.get('ready', True)
+
+        table = group.userTable.get(user=user)
+        table.userIsReady = toggle
+        table.save()
+        return Response(f"Successfully changed to ready={toggle}.", status=status.HTTP_200_OK)
+        
+class groupInviteViewAPI(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get(self, request):
+        super.isUserInGroup(request, request.GET['pk'])
+        group = super.get_object(request.GET['pk'])
+        target = get_object_or_404(CustomUser, userID=request.GET['userID'])
+        group.user.add(target)
+
+        return Response("ok", status=status.HTTP_200_OK)
+
+class groupInviteAcceptViewAPI(groupAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        pk = request.GET['pk']
+        super.isUserInGroup(request, pk, include=True)
+        user, group = CustomUser.objects.get(userID=request.user), super.get_group(pk)
+        
+        table = groupUserTable.objects.get(user=user, group=group)
+        table.acceptStat = True
+        table.save()
+        return Response("ok", status=status.HTTP_200_OK)
+        
+class groupLeaveViewAPI(groupAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def delete(self, request):
+        pk = request.GET['pk']
+        super.isUserInGroup(request, pk, include=True)
+        group = super.get_group(pk)
+        target = get_object_or_404(CustomUser, userID=request.GET['userID'])
+
+        group.user.remove(target)
+
+        return Response("ok", status=status.HTTP_200_OK)
+
+        
+
