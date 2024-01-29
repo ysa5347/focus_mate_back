@@ -9,7 +9,7 @@ def userPresentValidator(self, num):
 
 class groupSession(models.Model):
     name = models.SlugField(max_length=50)
-    user = models.ManyToManyField(CustomUser, related_name="group", through='groupUserTable')
+    user = models.ManyToManyField(CustomUser, related_name="group", through='groupUserTable', through_fields=("group", "user"))
     gender = models.BooleanField(null=True)
     leader = models.ForeignKey(CustomUser, related_name="leadingGroups", on_delete=models.PROTECT)
     userPresent = models.SmallIntegerField(default=1, validators=[userPresentValidator])
@@ -23,12 +23,12 @@ class groupSession(models.Model):
     matchStat = models.SmallIntegerField(default=0)
 
     def save(self, *args, **kwargs):
-        tableNum = groupUserTable.objects.filter(group=self, acceptStat=True).count()   
-        if self.userPresent != tableNum:
-            raise ValidationError(f"API exception, group args 'userPresent' not match with groupUserTable QuerySet count.\nuserPresent: {self.userPresent}\nTable Count: {tableNum}")
+        tableNum = groupUserTable.objects.filter(group=self, acceptStat=True).count()
+        # if self.userPresent != tableNum:
+        #     raise ValidationError(f"API exception, group args 'userPresent' not match with groupUserTable QuerySet count. userPresent: {self.userPresent} Table Count: {tableNum}")
         if self.userPresent > self.userCap:
             raise ValidationError(f"Validation error, the group is full.{self.userPresent}/{self.userCap}")
-        super.save(self, *args, **kwargs)
+        super(groupSession, self).save(*args, **kwargs)
     # @property
     # def userPresent(self):
 

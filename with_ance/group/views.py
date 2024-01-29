@@ -20,14 +20,15 @@ class groupAPIView(APIView):
 
     def isUserInGroup(self, request, pk, **kwargs):
         group = self.get_group(pk)
-        for user in group.users:                
-            if request.user == user.userID:
-                table = groupUserTable.objects.get(user=user, group=group)
-                if not(kwargs.get("include") or table.acceptStat):
-                    raise exceptions.PermissionDenied()
-                return True
+        try:
+            user = group.user.get(userID=request.user)
+        except:
+            raise exceptions.PermissionDenied("you are not the group member.")
+        table = groupUserTable.objects.get(user=user, group=group)
+        if not(kwargs.get("include") or table.acceptStat):
+            raise exceptions.PermissionDenied("you are not the group member since you still not accepted invite.")
 
-        raise exceptions.PermissionDenied() 
+        
 
     def setUserPresent(self, group):
         pass
@@ -53,7 +54,10 @@ class groupCreateViewAPI(groupAPIView):
             leader=reqUser,
             userCap=data["userCap"]
             )
-        group.users.add(reqUser)
+        group.user.add(reqUser)
+        table = groupUserTable.objects.get(user=reqUser, group=group)
+        table.acceptStat = True
+        table.save()
         
         return Response(serializer.data)
 
@@ -61,7 +65,7 @@ class groupListViewAPI(groupAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        query = super.queryValidator(request.GET)
+        # query = super.queryValidator(request.GET)
         # groups = groupSession.objects.filter(pubStat=True, **query)
         groups = groupSession.objects.filter(pubStat=True)
         if not groups:
@@ -73,14 +77,14 @@ class groupDetailViewAPI(groupAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, pk):
-        group = super.get_object(pk)
+        group = super(groupDetailViewAPI, self).get_group(pk)
         serializer = groupDetailViewSerializer(group)
         
         return Response(serializer.data)
 
     def patch(self, request, pk):
-        super.isUserInGroup(request, pk)
-        group = super.get_object(pk)
+        super(groupDetailViewAPI, self).isUserInGroup(request, pk)
+        group = super(groupDetailViewAPI, self).get_group(pk)
         serializer = groupDetailViewSerializer(group, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -88,8 +92,8 @@ class groupDetailViewAPI(groupAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        super.isUserInGroup(request, pk)
-        group = super.get_object(pk)
+        super(groupDetailViewAPI, self).isUserInGroup(request, pk)
+        group = super(groupDetailViewAPI, self).get_group(pk)
         group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -98,9 +102,9 @@ class userReadyViewAPI(groupAPIView):
     
     def get(self, request):
         pk = request.GET['pk']
-        super.isUserInGroup(request, pk)
+        super(userReadyViewAPI, self).isUserInGroup(request, pk)
 
-        group = super.get_object(pk)
+        group = super(userReadyViewAPI, self).get_group(pk)
         user = get_object_or_404(CustomUser, userID=request.user)
         toggle = request.GET.get('ready', True)
 
@@ -113,8 +117,8 @@ class groupInviteViewAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request):
-        super.isUserInGroup(request, request.GET['pk'])
-        group = super.get_object(request.GET['pk'])
+        super(groupInviteViewAPI, self).isUserInGroup(request, request.GET['pk'])
+        group = super(groupInviteViewAPI, self).get_group(request.GET['pk'])
         target = get_object_or_404(CustomUser, userID=request.GET['userID'])
         group.user.add(target)
 
@@ -125,8 +129,8 @@ class groupInviteAcceptViewAPI(groupAPIView):
 
     def get(self, request):
         pk = request.GET['pk']
-        super.isUserInGroup(request, pk, include=True)
-        user, group = CustomUser.objects.get(userID=request.user), super.get_group(pk)
+        super(groupInviteAcceptViewAPI, self).isUserInGroup(request, pk, include=True)
+        user, group = CustomUser.objects.get(userID=request.user), super(groupInviteAcceptViewAPI, self).get_group(pk)
         
         table = groupUserTable.objects.get(user=user, group=group)
         table.acceptStat = True
@@ -138,8 +142,8 @@ class groupLeaveViewAPI(groupAPIView):
 
     def delete(self, request):
         pk = request.GET['pk']
-        super.isUserInGroup(request, pk, include=True)
-        group = super.get_group(pk)
+        super(groupLeaveViewAPI, self).isUserInGroup(request, pk, include=True)
+        group = super(groupLeaveViewAPI, self).get_group(pk)
         target = get_object_or_404(CustomUser, userID=request.GET['userID'])
 
         group.user.remove(target)

@@ -9,7 +9,7 @@ from account.serializers import userAbstractSerializer
 class groupCreateViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = groupSession
-        fields = ['users', 'userCap']
+        fields = ['user', 'userCap']
 
 class groupDetailViewSerializer(serializers.ModelSerializer):
     class Meta:

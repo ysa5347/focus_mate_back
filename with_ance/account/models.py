@@ -31,11 +31,11 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(userID, email, password, **extra_fields)
+        return self.create_user(userID, email, password, gender=True, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 password columm이 이미 있음
     userID = models.CharField(max_length=15, primary_key=True, help_text='user ID')
-    phoneNum = models.CharField(max_length=11, unique=True, help_text='phone number')
+    phoneNum = models.CharField(max_length=11, unique=True, null=True, help_text='phone number')
     gender = models.BooleanField(null=True)
     email = models.CharField(max_length=100, unique=True, help_text='Email')
     gender = models.BooleanField()
