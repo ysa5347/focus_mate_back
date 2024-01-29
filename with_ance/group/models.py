@@ -1,6 +1,5 @@
 from django.db import models
 from account.models import CustomUser
-from room.models import roomSession
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
@@ -22,7 +21,6 @@ class groupSession(models.Model):
     matchTime = models.DateTimeField(null=True)
     pubStat = models.BooleanField(default=False)
     matchStat = models.SmallIntegerField(default=0)
-    room = models.ForeignKey(roomSession, on_delete=models.PROTECT, null=True, related_name='groups')
 
     def save(self, *args, **kwargs):
         tableNum = groupUserTable.objects.filter(group=self, acceptStat=True).count()
