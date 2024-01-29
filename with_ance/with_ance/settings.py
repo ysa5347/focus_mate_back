@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'channels',
     'account',
-    'group',
-    'room'
+    'group'
 ]
 
 MIDDLEWARE = [
