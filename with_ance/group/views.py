@@ -50,7 +50,6 @@ class groupCreateViewAPI(groupAPIView):
         
         group = groupSession.objects.create(
             name=data["name"],
-            gender=reqUser.gender,
             leader=reqUser,
             userCap=data["userCap"]
             )
@@ -150,5 +149,4 @@ class groupLeaveViewAPI(groupAPIView):
 
         return Response("ok", status=status.HTTP_200_OK)
 
-        
 

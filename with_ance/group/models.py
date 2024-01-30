@@ -11,7 +11,7 @@ class groupSession(models.Model):
     name = models.SlugField(max_length=50)
     user = models.ManyToManyField(CustomUser, related_name="group", through='groupUserTable', through_fields=("group", "user"))
     gender = models.BooleanField(null=True)
-    leader = models.ForeignKey(CustomUser, related_name="leadingGroups", on_delete=models.PROTECT)
+    leaders = models.ManyToManyField(CustomUser, related_name="leadingGroups")
     userPresent = models.SmallIntegerField(default=1, validators=[userPresentValidator])
     userCap = models.SmallIntegerField(default=1)
     isReady = models.BooleanField(default=False)
@@ -23,11 +23,11 @@ class groupSession(models.Model):
     matchStat = models.SmallIntegerField(default=0)
 
     def save(self, *args, **kwargs):
-        tableNum = groupUserTable.objects.filter(group=self, acceptStat=True).count()
+        # tableNum = groupUserTable.objects.filter(group=self, acceptStat=True).count()
         # if self.userPresent != tableNum:
         #     raise ValidationError(f"API exception, group args 'userPresent' not match with groupUserTable QuerySet count. userPresent: {self.userPresent} Table Count: {tableNum}")
-        if self.userPresent > self.userCap:
-            raise ValidationError(f"Validation error, the group is full.{self.userPresent}/{self.userCap}")
+        # if self.userPresent > self.userCap:
+        #     raise ValidationError(f"Validation error, the group is full.{self.userPresent}/{self.userCap}")
         super(groupSession, self).save(*args, **kwargs)
     # @property
     # def userPresent(self):
@@ -35,5 +35,7 @@ class groupSession(models.Model):
 class groupUserTable(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     group = models.ForeignKey(groupSession, on_delete=models.CASCADE)
+    lastGroup = models.ForeignKey(groupSession, on_delete=models.CASCADE, null=True, default=None) #해당 유저의 매칭 이전 group
     acceptStat = models.BooleanField(default=False)
+    acceptType = models.BooleanField(default=False) # False -> Target group이 초대한 경우. True -> Target group에 신청한 경우
     userIsReady = models.BooleanField(default=False)
