@@ -44,7 +44,7 @@ class userFolloweesViewSerializer(serializers.ModelSerializer):
 class userDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        exclude = ['password']
 
 class userAbstractSerializer(serializers.ModelSerializer):
     class Meta:

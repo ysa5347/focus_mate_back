@@ -17,7 +17,6 @@ class groupDetailViewSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class groupListViewSerializer(serializers.ModelSerializer):
-    users = serializers.StringRelatedField(many=True)
     class Meta:
         model = groupSession
-        fields = ['pk', 'name', 'gender', 'userCap', 'pubTime', 'users']
+        fields = ['pk', 'name', 'gender', 'userCap', 'pubTime', 'user']

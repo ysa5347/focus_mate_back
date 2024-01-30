@@ -13,6 +13,8 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrReadOnly, OwnerOnly
 from .serializers import *
 from .models import CustomUser, FollowUserStat
+from group.models import groupUserTable, groupSession
+from group.serializers import groupListViewSerializer
 
 # class userListViewAPI:
 
@@ -61,12 +63,18 @@ class userCreateViewAPI(APIView):
 class userSearchViewAPI(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
+    def get(self, request):
+        serializer = userListSerializer(CustomUser.objects.all(), many=True)
+        return Response(serializer.data)
+
     def post(self, request):
         filter = request.POST.items()
         for key, value in filter:
             key = key + "__contains"
 
-        Users = CustomUser.objects.filter(**filter)
+        Users = CustomUser.objects.all()
+        if filter is not None:
+            Users = Users.filter(**filter)
         serializer = userListSerializer(Users, many=True)
         return Response(serializer.data)
 
@@ -100,6 +108,22 @@ class userFollowAPI(APIView):
         
         serializer = userFollowViewSerializer(stat)
         return Response(serializer.data)
+
+class userInviteStatViewAPI(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        # groups = groupUserTable.objects.filter(user=user, acceptStat=0, acceptType=0)
+        print(request.user)
+        user = CustomUser.objects.get(userID=request.user)
+        print(user)
+        groups = groupSession.objects.filter(groupUserTable__user=request.user, groupUserTable__acceptStat=0, groupUserTable__acceptType=0)
+
+        serializer = groupListViewSerializer(groups)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+
+
 
     
 
