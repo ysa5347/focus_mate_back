@@ -28,8 +28,6 @@ class groupAPIView(APIView):
         if not(kwargs.get("include") or table.acceptStat):
             raise exceptions.PermissionDenied("you are not the group member since you still not accepted invite.")
 
-        
-
     def setUserPresent(self, group):
         pass
 
