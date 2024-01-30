@@ -8,6 +8,8 @@ urlpatterns = [
     path("pk=<int:pk>/", groupDetailViewAPI.as_view()),
     path("ready/", userReadyViewAPI.as_view()),
     path("invite/", groupInviteViewAPI.as_view()),
-    path("accept/", groupInviteAcceptViewAPI.as_view()),
+    path("wait/", groupWaitingViewAPI.as_view()),
+    path("acceptWait/", groupWaitingAcceptViewAPI.as_view()),
+    path("acceptInvite/", groupInviteAcceptViewAPI.as_view()),
     path("leave/", groupLeaveViewAPI.as_view())
 ]

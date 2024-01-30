@@ -8,27 +8,32 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from account.models import CustomUser, FollowUserStat
-from .models import groupSession, groupUserTable
+from .models import groupSession, groupUserTable, groupUserWaitingTable
 from .permissions import *
 from .serializers import *
 
 class groupAPIView(APIView):
     
     def get_group(self, pk):
-        group = get_object_or_404(groupSession, pk=pk)
+        try:
+            group = groupSession.objects.get(pk=pk)
+        except:
+            raise exceptions.NotFound(f"no groups. pk={pk}")
         return group
 
-    def isUserInGroup(self, request, pk, **kwargs):
+    def isUserInGroup(self, request, pk):
         group = self.get_group(pk)
         try:
-            user = group.user.get(userID=request.user)
+            group.user.get(userID=request.user)
         except:
             raise exceptions.PermissionDenied("you are not the group member.")
-        table = groupUserTable.objects.get(user=user, group=group)
-        if not(kwargs.get("include") or table.acceptStat):
-            raise exceptions.PermissionDenied("you are not the group member since you still not accepted invite.")
 
-        
+    def isUserInvited(self, request, pk):
+        group = self.get_group(pk)
+        try:
+            group.inviteTable.get(user=request.user)
+        except:
+            raise exceptions.PermissionDenied("you are not invited from the group.")
 
     def setUserPresent(self, group):
         pass
@@ -50,10 +55,10 @@ class groupCreateViewAPI(groupAPIView):
         
         group = groupSession.objects.create(
             name=data["name"],
-            leader=reqUser,
             userCap=data["userCap"]
             )
         group.user.add(reqUser)
+        group.leaders.add(reqUser)
         table = groupUserTable.objects.get(user=reqUser, group=group)
         table.acceptStat = True
         table.save()
@@ -112,15 +117,18 @@ class userReadyViewAPI(groupAPIView):
         table.save()
         return Response(f"Successfully changed to ready={toggle}.", status=status.HTTP_200_OK)
         
-class groupInviteViewAPI(APIView):
+class groupInviteViewAPI(groupAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request):
         super(groupInviteViewAPI, self).isUserInGroup(request, request.GET['pk'])
         group = super(groupInviteViewAPI, self).get_group(request.GET['pk'])
         target = get_object_or_404(CustomUser, userID=request.GET['userID'])
-        group.user.add(target)
-
+        groupUserInviteTable.objects.create(
+            user=target,
+            group=group,
+            type=False          # false -> group이 user를 초대한 경우.
+        )
         return Response("ok", status=status.HTTP_200_OK)
 
 class groupInviteAcceptViewAPI(groupAPIView):
@@ -128,20 +136,40 @@ class groupInviteAcceptViewAPI(groupAPIView):
 
     def get(self, request):
         pk = request.GET['pk']
-        super(groupInviteAcceptViewAPI, self).isUserInGroup(request, pk, include=True)
+        super(groupInviteAcceptViewAPI, self).isUserInvited(request, pk)
         user, group = CustomUser.objects.get(userID=request.user), super(groupInviteAcceptViewAPI, self).get_group(pk)
-        
-        table = groupUserTable.objects.get(user=user, group=group)
-        table.acceptStat = True
-        table.save()
+        waitTable = groupUserWaitingTable.objects.get(user=user, group=group, type=False)
+        waitTable.delete()
+        group.user.add(user)
         return Response("ok", status=status.HTTP_200_OK)
+
+class groupWaitingViewAPI(groupAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        pk = request.GET['pk']
+        user, group = CustomUser.objects.get(userID=request.user), super(groupWaitingViewAPI, self).get_group(pk)
+        groupUserWaitingTable.objects.create(user=user, group=group, type=True)
+        return Response("ok", status=status.HTTP_200_OK)
+
+class groupWaitingAcceptViewAPI(groupAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        pk = request.GET['pk']
+        user, group = CustomUser.objects.get(userID=request.GET['userID']), super(groupWaitingAcceptViewAPI, self).get_group(pk)
+        waitTable = groupUserWaitingTable.objects.get(user=user, group=group, type=True)
+        waitTable.delete()
+        group.user.add(user)
+        return Response("ok", status=status.HTTP_200_OK)
+        
         
 class groupLeaveViewAPI(groupAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def delete(self, request):
         pk = request.GET['pk']
-        super(groupLeaveViewAPI, self).isUserInGroup(request, pk, include=True)
+        super(groupLeaveViewAPI, self).isUserInGroup(request, pk)
         group = super(groupLeaveViewAPI, self).get_group(pk)
         target = get_object_or_404(CustomUser, userID=request.GET['userID'])
 

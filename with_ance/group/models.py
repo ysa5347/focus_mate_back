@@ -12,7 +12,7 @@ class groupSession(models.Model):
     user = models.ManyToManyField(CustomUser, related_name="group", through='groupUserTable', through_fields=("group", "user"))
     gender = models.BooleanField(null=True)
     leaders = models.ManyToManyField(CustomUser, related_name="leadingGroups")
-    userPresent = models.SmallIntegerField(default=1, validators=[userPresentValidator])
+    userPresent = models.SmallIntegerField(default=1)
     userCap = models.SmallIntegerField(default=1)
     isReady = models.BooleanField(default=False)
     createdTime = models.DateTimeField(auto_now_add=True)
@@ -21,6 +21,9 @@ class groupSession(models.Model):
     matchTime = models.DateTimeField(null=True)
     pubStat = models.BooleanField(default=False)
     matchStat = models.SmallIntegerField(default=0)
+
+    def __str__(self):
+        return f'[{self.pk}]{self.name}'
 
     def save(self, *args, **kwargs):
         # tableNum = groupUserTable.objects.filter(group=self, acceptStat=True).count()
@@ -33,9 +36,12 @@ class groupSession(models.Model):
     # def userPresent(self):
 
 class groupUserTable(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    group = models.ForeignKey(groupSession, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='groupUserTable')
+    group = models.ForeignKey(groupSession, on_delete=models.CASCADE, related_name='groupUserTable')
     lastGroup = models.ForeignKey(groupSession, on_delete=models.CASCADE, null=True, default=None) #해당 유저의 매칭 이전 group
-    acceptStat = models.BooleanField(default=False)
-    acceptType = models.BooleanField(default=False) # False -> Target group이 초대한 경우. True -> Target group에 신청한 경우
     userIsReady = models.BooleanField(default=False)
+
+class groupUserWaitingTable(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='waitTable')
+    group = models.ForeignKey(groupSession, on_delete=models.CASCADE, related_name='waitTable')
+    type = models.BooleanField() # False -> Target group이 초대한 경우. True -> Target group에 신청한 경우
