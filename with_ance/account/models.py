@@ -38,20 +38,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
     phoneNum = models.CharField(max_length=11, unique=True, null=True, help_text='phone number')
     gender = models.BooleanField(null=True)
     email = models.CharField(max_length=100, unique=True, help_text='Email')
-    gender = models.BooleanField()
     birth = models.PositiveSmallIntegerField(null=True, blank=True)
     name = models.CharField(max_length=40, null=True) 
     createdTime = models.DateTimeField(_('date joined'), default=timezone.now)
+    comment = models.CharField(max_length=200, blank=True)
+    # vector = ?
+
     college = models.CharField(max_length=100, null=True)
     major = models.CharField(max_length=100, null=True)
     semaster = models.PositiveSmallIntegerField(null=True)
-    comment = models.CharField(max_length=200, blank=True)
     profileImg = models.ImageField(blank=True)
     # livingArea = models.PointField()
-    # groups => groups what One ptcp
-    # leadingGroups => groups what One ptcp as leader
-    # groupTable => table about one's ptcping groups
-    # rooms => rooms what One ptcp
+    # 관심사
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
@@ -77,5 +75,8 @@ class FollowUserStat(models.Model):
     follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='followee_users')        # 팔로우 하는사람
     followee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follower_users')        # 팔로우 당한사람
 
+class College(models.Model):
+    name = models.CharField(primary_key=True, max_length=200)
+    group = models.IntegerField()
 
 # Create your models here.

@@ -21,7 +21,7 @@ class groupAPIView(APIView):
             raise exceptions.NotFound(f"no groups. pk={pk}")
         return group
 
-   def isUserInGroup(self, request, pk):
+    def isUserInGroup(self, request, pk):
         group = self.get_group(pk)
         try:
             group.user.get(userID=request.user)
