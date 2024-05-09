@@ -1,6 +1,6 @@
 #!/bin/bash
-cd /with_ance/with_ance_app/
-cd ./with_ance/
+cd /hwlloWorld/helloWorld/
+cd ./helloWorld/
 
 python3 manage.py makemigrations
 python3 manage.py migrate

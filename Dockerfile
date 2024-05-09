@@ -1,6 +1,6 @@
 FROM ubuntu
 
-WORKDIR /with_ance
+WORKDIR /helloWorld
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Seoul
 
@@ -20,13 +20,13 @@ ARG BRANCH
 RUN echo $BRANCH\
     echo DEBIAN_FRONTEND
 
-RUN git clone -b $BRANCH https://github.com/ysa5347/with_ance_app
+RUN git clone -b $BRANCH https://github.com/ysa5347/helloWorld
 RUN ls
 
 # env file은 github workflow에서 생성.
-COPY /.env /with_ance/with_ance_app/
-COPY /requirements.txt /with_ance/with_ance_app/
+COPY /.env /helloWorld/helloWorld/
+COPY /requirements.txt /helloWorld/helloWorld/
 
-RUN pip install -r ./with_ance_app/requirements.txt
+RUN pip install -r ./helloWorld/requirements.txt
 
-ENTRYPOINT sh ./with_ance_app/server.sh
+ENTRYPOINT sh ./helloWorld/server.sh
