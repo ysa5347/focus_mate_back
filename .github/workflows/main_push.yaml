@@ -28,12 +28,12 @@ name: Continuous Integration when accure push at main branch
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
-  AWS_REGION: ap-northeast-2                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: with_ance               # set this to your Amazon ECR repository name
-  CONTAINER_NAME: with_ance_backend           # set this to the name of the container in the
+  AWS_REGION: ap-northeast-2 # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: __ # set this to your Amazon ECR repository name
+  CONTAINER_NAME: __ # set this to the name of the container in the
 
 permissions:
   contents: read
@@ -45,55 +45,56 @@ jobs:
     environment: production
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with: 
-        ref: ${{ github.event.push.base_ref }}
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        persist-credentials: true
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.push.base_ref }}
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          persist-credentials: true
 
-    - name: Set sha outputs
-      id: vars
-      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Set sha outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Check sha outputs
-      run: echo ${{ steps.vars.outputs.sha_short }}
+      - name: Check sha outputs
+        run: echo ${{ steps.vars.outputs.sha_short }}
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.BUILDER_AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.BUILDER_AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.BUILDER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.BUILDER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Create .env file
-      env:
-        SECRETS_CONTEXT: ${{ toJson(secrets) }}
-      run: |
-        jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' <<< "$SECRETS_CONTEXT" > .env
+      - name: Create .env file
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+        run: |
+          echo "DATABASE=$(echo $SECRETS_CONTEXT | jq -r '.DATABASE')" > .env
+          echo $SECRETS_CONTEXT | jq -r 'del(.DATABASE) | to_entries|map("\(.key)=\(.value|tostring)")|.[]' > .env
 
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-push
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        sha: ${{ steps.vars.outputs.sha_short }}
-        branch: ${{ github.ref_name }}
-        
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}"
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-push
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          sha: ${{ steps.vars.outputs.sha_short }}
+          branch: ${{ github.ref_name }}
+
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }} --build-arg BRANCH=${{ env.branch }} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:main-${{ env.sha }}"
 
     outputs:
       sha_short: ${{ steps.vars.outputs.sha_short }}
-        
+
   CD:
     name: CD
     needs: CI
@@ -102,25 +103,25 @@ jobs:
     env:
       REPOURL: "https://github.com/ysa5347/with_ance_config.git"
 
-    steps:  
-    - uses: mikefarah/yq@master
-    - name: Checkout
-      uses: actions/checkout@v3
-      with: 
-        repository: ysa5347/with_ance_config
-        ref: main
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        persist-credentials: true
+    steps:
+      - uses: mikefarah/yq@master
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: ysa5347/with_ance_config
+          ref: main
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          persist-credentials: true
 
-    - name: create PR on with_ance_config
-      id: create-config
-      env:
-        branch: ${{ github.ref_name }}
-        TAG: ${{ github.ref_name }}-${{ needs.CI.outputs.sha_short }}
-      run: |
-        git config --global user.email "ysa5347@gmail.com"
-        git config --global user.name "ysa5347"
-        yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
-        git add .
-        git commit -m "TAG; tag $branch ${{ needs.CI.outputs.sha_short }}"
-        git push origin main
+      - name: create PR on with_ance_config
+        id: create-config
+        env:
+          branch: ${{ github.ref_name }}
+          TAG: ${{ github.ref_name }}-${{ needs.CI.outputs.sha_short }}
+        run: |
+          git config --global user.email "ysa5347@gmail.com"
+          git config --global user.name "ysa5347"
+          yq -i '(.images.tags[]|select(.name==strenv(branch))|.tag)=strenv(TAG)' ./with_ance/values.yaml
+          git add .
+          git commit -m "TAG; tag $branch ${{ needs.CI.outputs.sha_short }}"
+          git push origin main
