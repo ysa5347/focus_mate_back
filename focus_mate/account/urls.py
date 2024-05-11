@@ -7,5 +7,6 @@ urlpatterns = [
     path("login", loginAPI.as_view()),
     path("logout", logoutAPI.as_view()),
     path("config", userConfigViewAPI.as_view()),
+    path("category", userCategoryViewAPI.as_view())
 
 ]

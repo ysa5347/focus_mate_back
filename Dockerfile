@@ -27,6 +27,6 @@ RUN ls
 COPY /.env /focus_mate_back/focus_mate/
 COPY /requirements.txt /focus_mate_back/focus_mate/
 
-RUN pip install -r ./focus_mate/requirements.txt
+RUN pip install -r ./focus_mate_back/requirements.txt
 
-ENTRYPOINT sh ./focus_mate/server.sh
+ENTRYPOINT sh ./focus_mate_back/server.sh

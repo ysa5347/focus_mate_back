@@ -24,4 +24,7 @@ class userLoginSerializer(serializers.Serializer):
 class userConfigSerializer(serializers.Serializer):
     userID = serializers.CharField(required=True)
     outScreen = serializers.IntegerField(required=True)
-    
+
+class userCategorySerializer(serializers.Serializer):
+    userID = serializers.CharField(required=True)
+    category = serializers.CharField(required=True)

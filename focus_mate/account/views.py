@@ -98,6 +98,22 @@ class userConfigViewAPI(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class userCategoryViewAPI(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly, OwnerOnly]
+
+    def get(self, request):
+        user = CustomUser.objects.get(userID=request.user)
+        serializer = userCategorySerializer(user)
+        return Response(serializer.data)
+
+    def post(self, request):
+        user = CustomUser.objects.get(userID=request.user)
+        serializer = userCategorySerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 # class userSearchViewAPI(APIView):
 #     permission_classes = [IsAuthenticatedOrReadOnly]
     
