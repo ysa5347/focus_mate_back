@@ -6,11 +6,9 @@ from . import models
 class UserAdmin(admin.ModelAdmin):
     list_display = (
         'userID',
-        'email',
     )
     list_display_links = (
         'userID',
-        'email',
     )
     
 # session db admin

@@ -34,8 +34,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
     userID = models.CharField(max_length=15, primary_key=True, help_text='user ID')
     createdTime = models.DateTimeField(_('date joined'), default=timezone.now)
     comment = models.CharField(max_length=200, blank=True)
-    # livingArea = models.PointField()
-    # 관심사
+    outScreen = models.IntegerField(default=60)
+
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
@@ -43,7 +43,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
     )
     objects = UserManager()
 
-    REQUIRED_FIELDS = ['userID']
     USERNAME_FIELD = 'userID'
 
     class Meta:
@@ -62,6 +61,5 @@ class category(models.Model):
     category = models.CharField(max_length=50)
 
 class app(models.Model):
-    pk = models.AutoField(primary_key=True)
     platform = models.CharField(max_length=50)
     app = models.CharField(max_length=50)

@@ -15,10 +15,27 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from .views import helloView
 
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Focus Mate API",
+        default_version='v1',
+        description="Focus Mate API",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="ysa5347@gmail.com"),
+        license=openapi.License(name="BSD License")
+    ),
+    public=True
+)
+
 urlpatterns = [
-    path("", helloView.as_view()),
+    path(r'swagger(?P<format>\.json|\.yaml)', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path(r'swagger', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path(r'redoc', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-v1'),
+
     path('admin/', admin.site.urls),
     path('api/', include('rest_framework.urls')),
     path('account/', include('account.urls')),

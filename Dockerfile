@@ -20,7 +20,7 @@ ARG BRANCH
 RUN echo $BRANCH\
     echo DEBIAN_FRONTEND
 
-RUN git clone -b $BRANCH https://github.com/ysa5347/helloWorld
+RUN git clone -b $BRANCH https://github.com/ysa5347/focus_mate_back.git
 RUN ls
 
 # env file은 github workflow에서 생성.
