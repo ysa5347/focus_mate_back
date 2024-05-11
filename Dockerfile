@@ -1,6 +1,6 @@
 FROM ubuntu
 
-WORKDIR /helloWorld
+WORKDIR /focus_mate
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Seoul
 
@@ -24,9 +24,9 @@ RUN git clone -b $BRANCH https://github.com/ysa5347/helloWorld
 RUN ls
 
 # env file은 github workflow에서 생성.
-COPY /.env /helloWorld/helloWorld/
-COPY /requirements.txt /helloWorld/helloWorld/
+COPY /.env /focus_mate_back/focus_mate/
+COPY /requirements.txt /focus_mate_back/focus_mate/
 
-RUN pip install -r ./helloWorld/requirements.txt
+RUN pip install -r ./focus_mate/requirements.txt
 
-ENTRYPOINT sh ./helloWorld/server.sh
+ENTRYPOINT sh ./focus_mate/server.sh
