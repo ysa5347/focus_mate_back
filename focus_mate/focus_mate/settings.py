@@ -43,10 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_yasg',
-    'channels',
     'account',
-    'group',
-    'match'
+    'block'
 ]
 
 MIDDLEWARE = [
@@ -92,15 +90,7 @@ WSGI_APPLICATION = 'focus_mate.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME' : os.environ.get('DATABASE'),
-        'USER' : os.environ.get('DB_USER'),
-        'PASSWORD' : os.environ.get('DB_PASSWORD'),
-        'HOST' : os.environ.get('DB_HOST'),
-        'PORT' : os.environ.get('DB_PORT'),
-        'OPTIONS': {
-            'charset' : 'utf8mb4'
-        }
+        'ENGINE': 'django.db.backends.sqlite3'
     }
 }
 

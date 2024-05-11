@@ -6,23 +6,20 @@ from django.utils.translation import gettext_lazy as _
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, userID, email, password, **extra_fields):
-        if not email:
-            raise ValueError('The given email must be set')
+    def _create_user(self, userID, password, **extra_fields):
         if not userID:
             raise ValueError('The given ID must be set')
-        email = self.normalize_email(email)
-        user = self.model(userID=userID, email=email, **extra_fields)
+        user = self.model(userID=userID, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, userID, email, password, **extra_fields):
+    def create_user(self, userID, password, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(userID, email, password, **extra_fields)
+        return self._create_user(userID, password, **extra_fields)
 
-    def create_superuser(self, userID, email, password, **extra_fields):
+    def create_superuser(self, userID, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -31,23 +28,12 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(userID, email, password, gender=True, **extra_fields)
+        return self.create_user(userID, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 password columm이 이미 있음
     userID = models.CharField(max_length=15, primary_key=True, help_text='user ID')
-    phoneNum = models.CharField(max_length=11, unique=True, null=True, help_text='phone number')
-    gender = models.BooleanField(null=True)
-    email = models.CharField(max_length=100, unique=True, help_text='Email')
-    birth = models.PositiveSmallIntegerField(null=True, blank=True)
-    name = models.CharField(max_length=40, null=True) 
     createdTime = models.DateTimeField(_('date joined'), default=timezone.now)
     comment = models.CharField(max_length=200, blank=True)
-    # vector = ?
-
-    college = models.CharField(max_length=100, null=True)
-    major = models.CharField(max_length=100, null=True)
-    semaster = models.PositiveSmallIntegerField(null=True)
-    profileImg = models.ImageField(blank=True)
     # livingArea = models.PointField()
     # 관심사
     is_staff = models.BooleanField(
@@ -57,8 +43,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
     )
     objects = UserManager()
 
-    REQUIRED_FIELDS = ['email']
-    EMAIL_FIELD = 'email'
+    REQUIRED_FIELDS = ['userID']
     USERNAME_FIELD = 'userID'
 
     class Meta:
@@ -70,13 +55,3 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
 
     def get_short_name(self):
         return self.userID
-    
-class FollowUserStat(models.Model):
-    follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='followee_users')        # 팔로우 하는사람
-    followee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follower_users')        # 팔로우 당한사람
-
-class College(models.Model):
-    name = models.CharField(primary_key=True, max_length=200)
-    group = models.IntegerField()
-
-# Create your models here.
