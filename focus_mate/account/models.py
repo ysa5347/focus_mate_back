@@ -55,3 +55,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin): #AbstractBaseUser에 passw
 
     def get_short_name(self):
         return self.userID
+
+class category(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='categories')
+    apps = models.ManyToManyField('app', related_name='categories')
+    category = models.CharField(max_length=50)
+
+class app(models.Model):
+    pk = models.AutoField(primary_key=True)
+    platform = models.CharField(max_length=50)
+    app = models.CharField(max_length=50)
