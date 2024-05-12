@@ -1,16 +1,11 @@
-from django.shortcuts import redirect, render
 from rest_framework import status
-from django.contrib.auth.hashers import check_password
 from django.contrib import auth
-from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .permissions import IsOwnerOrReadOnly, OwnerOnly
+from .permissions import OwnerOnly
 from .serializers import *
 from .models import CustomUser
 

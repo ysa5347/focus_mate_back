@@ -7,8 +7,8 @@ class timeBlock(models.Model):
     endTime = models.DateTimeField()
     application = models.CharField(max_length=50)
     ststus = models.SmallIntegerField()
+    date = models.DateField()
 
-    comment = models.CharField(max_length=200, blank=True)
     # livingArea = models.PointField()
     # 관심사
 
@@ -19,4 +19,9 @@ class timeBlock(models.Model):
     def __str__(self):
         return f'{self.user}; {self.endTime - self.startTime} timeBlock'
 
+class userDayAnalytics(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='dayAnalytics')
+    date = models.DateField()
+
+    
 # Create your models here.
